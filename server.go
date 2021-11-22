@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-func (customers *Customers) getAllCustomer(context echo.Context) error {
+func (customers *Customers) getAll(context echo.Context) error {
 	client, ctx, customerCollection := getDB()
 	defer client.Disconnect(ctx)
 
@@ -37,7 +37,7 @@ func (customers *Customers) getAllCustomer(context echo.Context) error {
 	return context.JSON(http.StatusOK, customers.customers)
 }
 
-func (customer *Customer) getCustomer(context echo.Context) error {
+func (customer *Customer) getOne(context echo.Context) error {
 	id := context.Param("id")
 
 	client, ctx, customerCollection := getDB()
@@ -49,7 +49,7 @@ func (customer *Customer) getCustomer(context echo.Context) error {
 	return context.JSON(http.StatusOK, customer)
 }
 
-func (customer *Customer) updateCustomer(context echo.Context) error {
+func (customer *Customer) update(context echo.Context) error {
 	type body struct {
 		Name    string `json:"Name" validate:"required"`
 		Address string `json:"Address" validate:"required"`
@@ -90,7 +90,7 @@ func (customer *Customer) updateCustomer(context echo.Context) error {
 	return context.JSON(http.StatusOK, "Customer updated successfully")
 }
 
-func (customer *Customer) deleteCustomer(context echo.Context) error {
+func (customer *Customer) delete(context echo.Context) error {
 	id := context.Param("id")
 
 	client, ctx, customerCollection := getDB()
@@ -121,7 +121,7 @@ func validateId(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (customer Customer) addCustomer(context echo.Context) error {
+func (customer Customer) add(context echo.Context) error {
 	type body struct {
 		Name    string `json:"Name" validate:"required"`
 		Address string `json:"Address" validate:"required"`
@@ -210,11 +210,11 @@ func main() {
 	e := echo.New()
 
 	e.Pre(middleware.RemoveTrailingSlash())
-	e.GET("/api/v1/customers", new(Customers).getAllCustomer)
-	e.GET("/api/v1/customers/:id", new(Customer).getCustomer, validateId)
-	e.PUT("/api/v1/customers/:id", new(Customer).updateCustomer, validateId)
-	e.DELETE("/api/v1/customers/:id", new(Customer).deleteCustomer, validateId)
-	e.POST("/api/v1/customers", new(Customer).addCustomer)
+	e.GET("/api/v1/customers", new(Customers).getAll)
+	e.GET("/api/v1/customers/:id", new(Customer).getOne, validateId)
+	e.PUT("/api/v1/customers/:id", new(Customer).update, validateId)
+	e.DELETE("/api/v1/customers/:id", new(Customer).delete, validateId)
+	e.POST("/api/v1/customers", new(Customer).add)
 
 	e.Logger.Print(fmt.Sprintf("Listening to the port: %s", port))
 	e.Logger.Fatal(e.Start(fmt.Sprintf("localhost:%s", port)))
